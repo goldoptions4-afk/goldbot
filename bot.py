@@ -1,7 +1,8 @@
-from flask import Flask, request
-import requests
-import threading
+import os
 import time
+import threading
+import requests
+from flask import Flask, request
 
 app = Flask(__name__)
 
@@ -33,7 +34,7 @@ def monitor_trade(trade_id, signal, entry, tp1, tp2, tp3, sl):
             time.sleep(30)
             continue
 
-        if signal == "BUY":
+        if signal == "buy":
             if not tp1_hit and price >= tp1:
                 tp1_hit = True
                 send_message("GOLD SMASHED TP1 ✅✅✅\n\n☑️ Close your positions now and secure your profits\n\nOr\n\n☑️ Move your SL to Break Even and let the trade run risk free")
@@ -49,7 +50,7 @@ def monitor_trade(trade_id, signal, entry, tp1, tp2, tp3, sl):
                 del active_trades[trade_id]
                 break
 
-        elif signal == "SELL":
+        elif signal == "sell":
             if not tp1_hit and price <= tp1:
                 tp1_hit = True
                 send_message("GOLD SMASHED TP1 ✅✅✅\n\n☑️ Close your positions now and secure your profits\n\nOr\n\n☑️ Move your SL to Break Even and let the trade run risk free")
@@ -70,10 +71,10 @@ def monitor_trade(trade_id, signal, entry, tp1, tp2, tp3, sl):
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
-    signal = data.get("signal")
+    signal = data.get("signal", "").lower()
     price = float(data.get("price"))
 
-    if signal == "BUY":
+    if signal == "buy":
         tp1 = round(price + 2, 2)
         tp2 = round(price + 3, 2)
         tp3 = round(price + 15, 2)
@@ -82,7 +83,7 @@ def webhook():
         entry_low  = round(price - 10, 2)
         msg = f"BUY 🟢\nXAU/USD | GOLD\n\nENTRY : {entry_high} - {entry_low}\n\n✅ TP1 : {tp1}\n✅ TP2 : {tp2}\n✅ TP3 : {tp3}\n🛑 SL : {sl}\n\n(Use Appropriate Lot Sizes)"
 
-    elif signal == "SELL":
+    elif signal == "sell":
         tp1 = round(price - 2, 2)
         tp2 = round(price - 3, 2)
         tp3 = round(price - 15, 2)
@@ -109,4 +110,5 @@ def home():
     return "Gold Signals Bot is running! ✅"
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
