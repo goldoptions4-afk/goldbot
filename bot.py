@@ -90,7 +90,7 @@ def webhook():
         sl  = round(price + 15, 2)
         entry_low  = round(price, 2)
         entry_high = round(price + 10, 2)
-        msg = f"SELL 🔴\nXAU/USD | GOLD\n\nENTRY : {entry_high} - {entry_low}\n\n✅ TP1 : {tp1}\n✅ TP2 : {tp2}\n✅ TP3 : {tp3}\n🛑 SL : {sl}\n\n(Use Appropriate Lot Sizes)"
+        msg = f"SELL 🔴\nXAU/USD | GOLD\n\nENTRY : {entry_low} - {entry_high}\n\n✅ TP1 : {tp1}\n✅ TP2 : {tp2}\n✅ TP3 : {tp3}\n🛑 SL : {sl}\n\n(Use Appropriate Lot Sizes)"
 
     else:
         return "invalid", 400
