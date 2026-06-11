@@ -7,6 +7,8 @@ app = Flask(__name__)
 
 BOT_TOKEN = "8942443467:AAGa91LxkLLBqIY-5-zMr2_GmRHtj1rxs6Y"
 CHAT_ID = "-1003915138060"
+CHART_API_KEY = "RQYJNd769k3MmW3HX6O4P50GWnQ6bcFt2RaHvRcy"
+CHART_URL = f"https://chart-img.com/v2/tradingview/advanced-chart?symbol=OANDA:XAUUSD&interval=5&theme=dark&key={CHART_API_KEY}"
 
 last_buy_msg_id = None
 last_sell_msg_id = None
@@ -20,6 +22,15 @@ def is_duplicate(signal_key):
     last_signal_time[signal_key] = now
     return False
 
+def get_chart():
+    try:
+        response = requests.get(CHART_URL, timeout=15)
+        if response.status_code == 200:
+            return response.content
+        return None
+    except:
+        return None
+
 def send_message(text, reply_to=None):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": text}
@@ -30,6 +41,19 @@ def send_message(text, reply_to=None):
     if data.get("ok"):
         return data["result"]["message_id"]
     return None
+
+def send_photo(text, reply_to=None):
+    chart = get_chart()
+    if chart:
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
+        payload = {"chat_id": CHAT_ID, "caption": text}
+        if reply_to:
+            payload["reply_to_message_id"] = reply_to
+        response = requests.post(url, data=payload, files={"photo": ("chart.png", chart, "image/png")})
+        data = response.json()
+        if data.get("ok"):
+            return data["result"]["message_id"]
+    return send_message(text, reply_to=reply_to)
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -51,7 +75,7 @@ def webhook():
             entry_high = round(price, 2)
             entry_low  = round(price - 10, 2)
             msg = f"BUY 🟢\nXAU/USD | GOLD\n\nENTRY : {entry_high} - {entry_low}\n\n✅ TP : {tp}\n🛑 SL : {sl}\n\n(Use Appropriate Lot Sizes)"
-            last_buy_msg_id = send_message(msg)
+            last_buy_msg_id = send_photo(msg)
 
         elif signal == "sell":
             tp = round(price - 30, 2)
@@ -59,7 +83,7 @@ def webhook():
             entry_low  = round(price, 2)
             entry_high = round(price + 10, 2)
             msg = f"SELL 🔴\nXAU/USD | GOLD\n\nENTRY : {entry_low} - {entry_high}\n\n✅ TP : {tp}\n🛑 SL : {sl}\n\n(Use Appropriate Lot Sizes)"
-            last_sell_msg_id = send_message(msg)
+            last_sell_msg_id = send_photo(msg)
 
         elif signal == "be_alert":
             reply_id = last_buy_msg_id if last_buy_msg_id else last_sell_msg_id
@@ -95,7 +119,7 @@ def test_buy():
     entry_high = round(price, 2)
     entry_low  = round(price - 10, 2)
     msg = f"BUY 🟢\nXAU/USD | GOLD\n\nENTRY : {entry_high} - {entry_low}\n\n✅ TP : {tp}\n🛑 SL : {sl}\n\n(Use Appropriate Lot Sizes)"
-    last_buy_msg_id = send_message(msg)
+    last_buy_msg_id = send_photo(msg)
     return "BUY test sent! ✅"
 
 @app.route("/test-sell")
@@ -107,7 +131,7 @@ def test_sell():
     entry_low  = round(price, 2)
     entry_high = round(price + 10, 2)
     msg = f"SELL 🔴\nXAU/USD | GOLD\n\nENTRY : {entry_low} - {entry_high}\n\n✅ TP : {tp}\n🛑 SL : {sl}\n\n(Use Appropriate Lot Sizes)"
-    last_sell_msg_id = send_message(msg)
+    last_sell_msg_id = send_photo(msg)
     return "SELL test sent! ✅"
 
 @app.route("/test-be")
