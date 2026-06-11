@@ -8,7 +8,7 @@ app = Flask(__name__)
 BOT_TOKEN = "8942443467:AAGa91LxkLLBqIY-5-zMr2_GmRHtj1rxs6Y"
 CHAT_ID = "-1003915138060"
 CHART_API_KEY = "RQYJNd769k3MmW3HX6O4P50GWnQ6bcFt2RaHvRcy"
-CHART_URL = f"https://chart-img.com/v2/tradingview/advanced-chart?symbol=OANDA:XAUUSD&interval=5&theme=dark&key={CHART_API_KEY}"
+CHART_URL = f"https://chart-img.com/v1/tradingview/advanced-chart?symbol=OANDA%3AXAUUSD&interval=5&theme=dark&key={CHART_API_KEY}"
 
 last_buy_msg_id = None
 last_sell_msg_id = None
@@ -25,10 +25,13 @@ def is_duplicate(signal_key):
 def get_chart():
     try:
         response = requests.get(CHART_URL, timeout=15)
+        print(f"Chart API status: {response.status_code}")
         if response.status_code == 200:
             return response.content
+        print(f"Chart API error: {response.text}")
         return None
-    except:
+    except Exception as e:
+        print(f"Chart fetch error: {e}")
         return None
 
 def send_message(text, reply_to=None):
@@ -51,8 +54,10 @@ def send_photo(text, reply_to=None):
             payload["reply_to_message_id"] = reply_to
         response = requests.post(url, data=payload, files={"photo": ("chart.png", chart, "image/png")})
         data = response.json()
+        print(f"Send photo response: {data}")
         if data.get("ok"):
             return data["result"]["message_id"]
+    print("Chart failed, falling back to text message")
     return send_message(text, reply_to=reply_to)
 
 @app.route("/webhook", methods=["POST"])
