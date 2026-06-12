@@ -8,7 +8,7 @@ app = Flask(__name__)
 BOT_TOKEN = "8942443467:AAGa91LxkLLBqIY-5-zMr2_GmRHtj1rxs6Y"
 CHAT_ID = "-1003915138060"
 CHART_API_KEY = "RQYJNd769k3MmW3HX6O4P50GWnQ6bcFt2RaHvRcy"
-CHART_URL = f"https://chart-img.com/v1/tradingview/advanced-chart?symbol=XAUUSD&interval=5&theme=dark&key={CHART_API_KEY}"
+CHART_URL = f"https://chart-img.com/v1/tradingview/advanced-chart?symbol=TVC%3AGOLD&interval=5&theme=dark&key={CHART_API_KEY}"
 
 last_buy_msg_id = None
 last_sell_msg_id = None
